@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SGD — Catálogo de Dispositivos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --navy:#070f20;--navy2:#0c1829;--panel:#111d35;--panel2:#162444;
+      --border:rgba(59,130,246,0.15);--border2:rgba(59,130,246,0.28);
+      --blue:#2563eb;--blue-lt:#3b82f6;--blue-glow:rgba(37,99,235,0.25);
+      --sky:#60a5fa;--gold:#f59e0b;--gold-lt:#fbbf24;
+      --emerald:#10b981;--rose:#f43f5e;
+      --text:#c8d8f0;--text-dim:#6b8ab5;--text-muted:#2d4470;--white:#f0f7ff;
+      --sans:'Outfit',sans-serif;--mono:'DM Mono',monospace;
+      --ease:cubic-bezier(0.25,0.46,0.45,0.94)
+    }
+    html{scroll-behavior:smooth}
+    body{font-family:var(--sans);background:var(--navy);color:var(--text);min-height:100vh;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(37,99,235,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(37,99,235,0.04) 1px,transparent 1px);background-size:48px 48px}
+    .bg-glow{position:fixed;top:-300px;left:50%;transform:translateX(-50%);width:1200px;height:700px;background:radial-gradient(ellipse,rgba(37,99,235,0.13) 0%,transparent 65%);pointer-events:none;z-index:0}
+    .app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+    /* ── LOADING ── */
+    .loading-screen{position:fixed;inset:0;z-index:999;background:radial-gradient(circle at center,#d9dbe1 0%,#04142a 45%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:50px}
+    .loading-logo{display:flex;align-items:center;justify-content:center;animation:pulse2 1.5s infinite}
+    .loading-logo img{width:250px;object-fit:contain;display:block;border-radius:20px}
+    @keyframes pulse2{0%,100%{opacity:1}50%{opacity:0.85}}
+    .loading-bar{width:340px;height:50px;background:rgba(59,130,246,0.15);border-radius:1px;overflow:hidden;position:absolute;bottom:48px}
+    .loading-progress{height:100%;background:linear-gradient(90deg,var(--blue),var(--sky));border-radius:3px;animation:load 1.8s var(--ease) forwards}
+    @keyframes load{from{width:0}to{width:100%}}
+
+    /* ── HEADER ── */
+    .header{display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:62px;border-bottom:1px solid var(--border);background:rgba(7,15,32,0.9);backdrop-filter:blur(16px);position:sticky;top:0;z-index:200}
+    .header-brand{display:flex;align-items:center;gap:12px}
+    .header-logo{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--blue),var(--sky));display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:0.72rem;font-weight:500;color:#fff;letter-spacing:-0.02em}
+    .header-title{font-size:0.9rem;font-weight:600;color:var(--white);letter-spacing:0.01em}
+    .header-sub{font-size:0.68rem;color:var(--text-dim);margin-top:1px;font-family:var(--mono);letter-spacing:0.06em}
+    .header-right{display:flex;align-items:center;gap:12px}
+    .header-pill{display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-family:var(--mono);font-size:0.62rem;color:var(--text-dim);letter-spacing:0.08em}
+    .live-dot{width:8px;height:8px;border-radius:50%;background:var(--emerald);box-shadow:0 0 10px var(--emerald);animation:blink 2s infinite}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:0.4}}
+
+    /* Botão inserir */
+    .btn-insert{display:flex;align-items:center;gap:7px;background:var(--blue);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-family:var(--sans);font-size:0.78rem;font-weight:600;cursor:pointer;transition:background 0.2s,box-shadow 0.2s,transform 0.15s;box-shadow:0 3px 12px var(--blue-glow);letter-spacing:0.01em;white-space:nowrap}
+    .btn-insert:hover{background:var(--blue-lt);transform:translateY(-1px);box-shadow:0 6px 20px var(--blue-glow)}
+    .btn-insert:active{transform:translateY(0)}
+
+    /* ── CONTENT ── */
+    .content{flex:1;padding:32px 40px 80px;max-width:1440px;margin:0 auto;width:100%}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+    /* ── TOOLBAR ── */
+    .toolbar{display:flex;align-items:center;gap:14px;margin-bottom:24px;flex-wrap:wrap}
+    .search-wrap{flex:1;min-width:220px;position:relative}
+    .search-input{width:100%;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 16px 10px 38px;color:var(--text);font-family:var(--sans);font-size:0.82rem;outline:none;transition:border-color 0.2s,box-shadow 0.2s}
+    .search-input::placeholder{color:var(--text-muted)}
+    .search-input:focus{border-color:var(--blue-lt);box-shadow:0 0 0 3px var(--blue-glow)}
+    .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-dim);font-size:0.85rem;pointer-events:none}
+    .filter-btns{display:flex;gap:8px;flex-wrap:wrap}
+    .filter-btn{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:0.75rem;font-weight:500;color:var(--text-dim);cursor:pointer;transition:all 0.2s;white-space:nowrap}
+    .filter-btn:hover,.filter-btn.active{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 2px 12px var(--blue-glow)}
+
+    /* ── GRID ── */
+    .catalog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
+    .device-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:transform 0.25s var(--ease),border-color 0.25s,box-shadow 0.25s;animation:fadeUp 0.35s var(--ease) both;display:flex;flex-direction:column}
+    .device-card:hover{transform:translateY(-5px);border-color:rgba(59,130,246,0.45);box-shadow:0 16px 48px rgba(0,0,0,0.4),0 0 0 1px rgba(59,130,246,0.1)}
+    .card-img-wrap{position:relative;height:200px;overflow:hidden;background:var(--panel2);border-bottom:1px solid var(--border)}
+    .card-img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.4s var(--ease)}
+    .device-card:hover .card-img{transform:scale(1.04)}
+    .card-img-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+    .card-img-placeholder img{width:100%;height:100%;object-fit:contain;padding:20px;opacity:0.6}
+    .card-molde-badge{position:absolute;top:10px;left:10px;font-family:var(--mono);font-size:0.58rem;padding:4px 9px;border-radius:4px;letter-spacing:0.06em;background:rgba(7,15,32,0.75);color:var(--sky);border:1px solid rgba(59,130,246,0.3);backdrop-filter:blur(8px)}
+    .card-source-badge{position:absolute;top:10px;right:10px;font-family:var(--mono);font-size:0.52rem;padding:3px 7px;border-radius:4px;letter-spacing:0.06em;backdrop-filter:blur(8px)}
+    .badge-drive{background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3)}
+    .badge-manual{background:rgba(96,165,250,0.15);color:var(--sky);border:1px solid rgba(96,165,250,0.3)}
+    .card-body{padding:16px 18px 18px;flex:1;display:flex;flex-direction:column}
+    .card-name{font-size:0.92rem;font-weight:600;color:var(--white);line-height:1.35;margin-bottom:8px}
+    .card-desc{font-size:0.75rem;color:var(--text-dim);line-height:1.65;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;flex:1}
+
+    /* ── MODAL ADMIN ── */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+    .modal-overlay.show{display:flex}
+    .modal{background:var(--panel);border:1px solid var(--border2);border-radius:18px;width:100%;max-width:460px;overflow:hidden;animation:fadeUp 0.3s var(--ease) both;box-shadow:0 32px 80px rgba(0,0,0,0.6)}
+    .modal::before{content:'';display:block;height:3px;background:linear-gradient(90deg,var(--blue),var(--sky))}
+    .modal-header{padding:22px 26px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .modal-title{font-size:1rem;font-weight:700;color:var(--white)}
+    .modal-close{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1.2rem;line-height:1;padding:4px;transition:color 0.2s}
+    .modal-close:hover{color:var(--white)}
+    .modal-body{padding:24px 26px}
+    .m-field{margin-bottom:18px}
+    .m-label{font-family:var(--mono);font-size:0.6rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:7px;display:block}
+    .m-input,.m-textarea{width:100%;background:var(--panel2);border:1px solid var(--border);border-radius:9px;padding:10px 14px;color:var(--text);font-family:var(--sans);font-size:0.85rem;outline:none;transition:border-color 0.2s,box-shadow 0.2s}
+    .m-input::placeholder,.m-textarea::placeholder{color:var(--text-muted)}
+    .m-input:focus,.m-textarea:focus{border-color:var(--blue-lt);box-shadow:0 0 0 3px var(--blue-glow)}
+    .m-textarea{resize:vertical;min-height:90px;line-height:1.6}
+    .m-file-label{display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px dashed var(--border2);border-radius:9px;padding:12px 16px;cursor:pointer;transition:border-color 0.2s,background 0.2s;font-size:0.82rem;color:var(--text-dim)}
+    .m-file-label:hover{border-color:var(--blue-lt);background:rgba(37,99,235,0.05);color:var(--text)}
+    .m-file-label input{display:none}
+    .m-file-preview{margin-top:10px;border-radius:8px;overflow:hidden;max-height:140px;display:none}
+    .m-file-preview img{width:100%;height:140px;object-fit:cover;display:block}
+    .modal-footer{padding:0 26px 24px;display:flex;gap:10px}
+    .btn-cancel{flex:1;background:var(--panel2);color:var(--text-dim);border:1px solid var(--border);border-radius:9px;padding:11px;font-family:var(--sans);font-size:0.85rem;font-weight:600;cursor:pointer;transition:all 0.2s}
+    .btn-cancel:hover{border-color:var(--border2);color:var(--text)}
+    .btn-save{flex:2;background:var(--blue);color:#fff;border:none;border-radius:9px;padding:11px;font-family:var(--sans);font-size:0.85rem;font-weight:700;cursor:pointer;transition:background 0.2s,box-shadow 0.2s;box-shadow:0 3px 14px var(--blue-glow)}
+    .btn-save:hover{background:var(--blue-lt)}
+    .btn-save:disabled{background:var(--panel2);color:var(--text-muted);cursor:not-allowed;box-shadow:none}
+    .m-error{font-size:0.75rem;color:#fb7185;margin-top:6px;display:none}
+    .m-error.show{display:block}
+    .m-success{text-align:center;padding:20px 0;display:none}
+    .m-success.show{display:block}
+    .m-success-icon{font-size:2.5rem;margin-bottom:10px}
+    .m-success-text{font-size:0.9rem;color:var(--text);font-weight:500}
+
+    /* ── MODAL SENHA ADMIN ── */
+    .admin-step,.form-step{transition:all 0.25s}
+
+    /* ── DETAIL VIEW ── */
+    .detail-back{display:inline-flex;align-items:center;gap:8px;font-size:0.78rem;color:var(--text-dim);cursor:pointer;border:none;background:none;margin-bottom:28px;transition:color 0.2s;padding:0}
+    .detail-back:hover{color:var(--blue-lt)}
+    .detail-layout{display:grid;grid-template-columns:360px 1fr;gap:28px;align-items:start}
+    .detail-img-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:hidden;position:sticky;top:80px}
+    .detail-img{width:100%;height:260px;object-fit:cover;display:block;background:var(--panel2)}
+    .detail-img-placeholder{width:100%;height:260px;display:flex;align-items:center;justify-content:center;background:var(--panel2)}
+    .detail-img-placeholder img{width:160px;object-fit:contain;opacity:0.7}
+    .detail-meta{padding:18px 20px;display:flex;flex-direction:column;gap:11px}
+    .meta-row{display:flex;justify-content:space-between;align-items:center}
+    .meta-key{font-family:var(--mono);font-size:0.6rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em}
+    .meta-val{font-size:0.8rem;font-weight:600;color:var(--white)}
+    .meta-sep{height:1px;background:var(--border)}
+    .detail-right{display:flex;flex-direction:column;gap:18px}
+    .detail-eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .detail-cat-tag{font-family:var(--mono);font-size:0.62rem;color:var(--sky);background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);padding:3px 10px;border-radius:4px;letter-spacing:0.08em}
+    .detail-title{font-size:1.9rem;font-weight:800;color:var(--white);line-height:1.15;letter-spacing:-0.02em;margin-bottom:4px}
+    .info-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+    .info-card-hdr{padding:12px 20px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:0.6rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.12em;background:rgba(0,0,0,0.15);display:flex;align-items:center;gap:8px}
+    .info-card-hdr .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+    .info-card-body{padding:18px 20px}
+    .info-card-body p{font-size:0.85rem;line-height:1.8;color:var(--text)}
+
+    /* ── EMPTY / ERROR ── */
+    .no-results{text-align:center;padding:80px 20px;font-family:var(--mono);font-size:0.8rem;color:var(--text-muted)}
+    .no-results-icon{font-size:2.5rem;margin-bottom:12px;opacity:0.4}
+
+    /* ── FOOTER ── */
+    .footer{position:fixed;bottom:0;left:0;right:0;height:52px;background:rgba(7,15,32,0.95);backdrop-filter:blur(14px);border-top:1px solid rgba(59,130,246,0.2);display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--mono);font-size:0.75rem;color:var(--text-dim);letter-spacing:0.08em;z-index:100}
+    .footer strong{color:var(--white);font-size:0.82rem;letter-spacing:0.05em}
+
+    /* ── VIEWS ── */
+    .view{display:none}
+    .view.active{display:block;animation:fadeUp 0.35s var(--ease) both}
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:900px){.detail-layout{grid-template-columns:1fr}.detail-img-card{position:static}}
+    @media(max-width:700px){.content{padding:20px 16px 80px}.header{padding:0 16px}.header-title{font-size:0.8rem}.header-sub{display:none}}
+    @media(max-width:480px){.footer{font-size:0.6rem;height:44px;padding:0 12px}.footer strong{font-size:0.65rem}.btn-insert span{display:none}}
+  </style>
+</head>
+<body>
+  <div class="bg-glow"></div>
+
+  <!-- LOADING -->
+  <div class="loading-screen" id="loading">
+    <div class="loading-logo"><img src="Imagens/1.png" alt="carregando"></div>
+    <div class="loading-bar"><div class="loading-progress"></div></div>
+  </div>
+
+  <!-- APP -->
+  <div class="app" id="app" style="display:none">
+    <header class="header">
+      <div class="header-brand">
+        <div class="header-logo">SGD</div>
+        <div>
+          <div class="header-title">Catálogo de Dispositivos</div>
+          <div class="header-sub">ENGENHARIA F1</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="header-pill"><div class="live-dot"></div>ATIVO</div>
+        <button class="btn-insert" onclick="abrirModalAdmin()">
+          <span style="font-size:1rem">＋</span>
+          <span>Inserir Dispositivo</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- CATÁLOGO -->
+      <div class="view active" id="view-catalog">
+        <div class="toolbar">
+          <div class="search-wrap">
+            <span class="search-icon">⌕</span>
+            <input class="search-input" id="search-input" type="text" placeholder="Buscar por nome, nº molde, descrição..." />
+          </div>
+          <div class="filter-btns" id="filter-btns"></div>
+        </div>
+        <div class="catalog-grid" id="catalog-grid"></div>
+      </div>
+
+      <!-- DETALHE -->
+      <div class="view" id="view-detail">
+        <button class="detail-back" onclick="showView('catalog')">← Voltar ao Catálogo</button>
+        <div id="detail-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Desenvolvido por <strong>Bruno R. Duarte</strong> &nbsp;&amp;&nbsp; <strong>Matheus H. Tinti</strong>
+  </div>
+
+  <!-- MODAL: SENHA ADMIN -->
+  <div class="modal-overlay" id="modal-admin">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">🔐 Acesso Admin</div>
+        <button class="modal-close" onclick="fecharModal('modal-admin')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="admin-step">
+          <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:18px;line-height:1.6">
+            Para inserir um novo dispositivo, informe a senha de administrador.
+          </p>
+          <div class="m-field">
+            <label class="m-label" for="admin-senha">Senha Admin</label>
+            <input class="m-input" id="admin-senha" type="password" placeholder="Digite a senha admin..." />
+            <div class="m-error" id="admin-erro">Senha incorreta. Tente novamente.</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="fecharModal('modal-admin')">Cancelar</button>
+        <button class="btn-save" id="btn-verificar" onclick="verificarAdmin()">Verificar →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: INSERIR DISPOSITIVO -->
+  <div class="modal-overlay" id="modal-inserir">
+    <div class="modal" style="max-width:520px">
+      <div class="modal-header">
+        <div class="modal-title">➕ Novo Dispositivo</div>
+        <button class="modal-close" onclick="fecharModal('modal-inserir')">✕</button>
+      </div>
+      <div class="modal-body" id="form-body">
+        <div class="m-field">
+          <label class="m-label" for="f-nome">Nome do Dispositivo *</label>
+          <input class="m-input" id="f-nome" type="text" placeholder="Ex: Dispositivo de Solda X200" />
+        </div>
+        <div class="m-field">
+          <label class="m-label" for="f-molde">Nº do Molde / Categoria *</label>
+          <input class="m-input" id="f-molde" type="text" placeholder="Ex: MOL-042" />
+        </div>
+        <div class="m-field">
+          <label class="m-label" for="f-desc">Descrição *</label>
+          <textarea class="m-textarea" id="f-desc" placeholder="Descreva o dispositivo, sua finalidade e características..."></textarea>
+        </div>
+        <div class="m-field">
+          <label class="m-label">Foto do Dispositivo</label>
+          <label class="m-file-label" for="f-foto">
+            <span style="font-size:1.2rem">📷</span>
+            <span id="file-label-text">Clique para selecionar uma imagem (JPG, PNG, WEBP)</span>
+            <input type="file" id="f-foto" accept="image/jpeg,image/png,image/webp" onchange="previewFoto(this)" />
+          </label>
+          <div class="m-file-preview" id="foto-preview">
+            <img id="foto-preview-img" src="" alt="preview" />
+          </div>
+        </div>
+        <div class="m-error" id="form-erro">Preencha todos os campos obrigatórios.</div>
+      </div>
+      <div id="form-success" class="m-success">
+        <div class="m-success-icon">✅</div>
+        <div class="m-success-text">Dispositivo inserido com sucesso!<br>O catálogo será atualizado.</div>
+      </div>
+      <div class="modal-footer" id="form-footer">
+        <button class="btn-cancel" onclick="fecharModal('modal-inserir')">Cancelar</button>
+        <button class="btn-save" id="btn-salvar" onclick="salvarDispositivo()">Salvar Dispositivo</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── AUTH ──────────────────────────────────────────────
+    const AUTH_TOKEN = sessionStorage.getItem('auth_token');
+    if (!AUTH_TOKEN) window.location.href = '/';
+
+    let ALL_DATA = [];
+    let currentFilter = 'Todos';
+    let adminToken = null; // token temporário confirmando que admin autenticou
+
+    // ── HELPERS ───────────────────────────────────────────
+    function normalizeImg(u) {
+      if (!u || u.trim() === '') return '';
+      let s = u.trim().replace('/refs/heads/main/', '/main/');
+      if (!/^[a-zA-Z]+:\/\//.test(s)) s = 'https://' + s.replace(/^\/+/, '');
+      try {
+        const p = new URL(s);
+        p.pathname = p.pathname.split('/').map(seg => seg ? encodeURIComponent(decodeURIComponent(seg)) : '').join('/');
+        return p.toString();
+      } catch { return s; }
+    }
+
+    function initials(name) {
+      return (name || '?').split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+    }
+
+    // ── RENDER CATALOG ────────────────────────────────────
+    function renderCatalog(data, filter = 'Todos', search = '') {
+      // Gerar filtros (nº molde / categoria)
+      const moldes = ['Todos', ...new Set(data.map(d => d.categoria || d.Categoria || 'S/N').filter(Boolean))];
+      const filterContainer = document.getElementById('filter-btns');
+      if (!filterContainer.dataset.rendered) {
+        filterContainer.dataset.rendered = '1';
+        filterContainer.innerHTML = moldes.map(m =>
+          `<button class="filter-btn ${m === currentFilter ? 'active' : ''}" onclick="applyFilter('${m.replace(/'/g,"\\'")}'">${m}</button>`
+        ).join('');
+      }
+
+      let filtered = [...data];
+      if (filter !== 'Todos') {
+        filtered = filtered.filter(d => (d.categoria || d.Categoria || 'S/N') === filter);
+      }
+      if (search) {
+        const q = search.toLowerCase();
+        filtered = filtered.filter(d =>
+          (d.nome || d.Item || '').toLowerCase().includes(q) ||
+          (d.categoria || d.Categoria || '').toLowerCase().includes(q) ||
+          (d.descricao || d.Detalhamento || '').toLowerCase().includes(q)
+        );
+      }
+
+      if (!filtered.length) {
+        document.getElementById('catalog-grid').innerHTML = `
+          <div class="no-results" style="grid-column:1/-1">
+            <div class="no-results-icon">🔍</div>
+            Nenhum dispositivo encontrado.
+          </div>`;
+        return;
+      }
+
+      document.getElementById('catalog-grid').innerHTML = filtered.map((d, i) => {
+        const nome = d.nome || d.Item || d.Detalhamento || 'Sem nome';
+        const desc = d.descricao || d.Detalhamento || '—';
+        const molde = d.categoria || d.Categoria || 'S/N';
+        const isManual = d._source === 'manual';
+        const imgSrc = isManual ? (d.imagem_url || '') : normalizeImg(d.Imagem || '');
+
+        return `<div class="device-card" onclick="showDetail('${d._uid}')" style="animation-delay:${i * 0.03}s">
+          <div class="card-img-wrap">
+            ${imgSrc
+              ? `<img class="card-img" src="${imgSrc}" alt="${nome}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                 <div class="card-img-placeholder" style="display:none;position:absolute;inset:0;"><img src="Imagens/holder-dispositivos.png"></div>`
+              : `<div class="card-img-placeholder"><img src="Imagens/holder-dispositivos.png"></div>`
+            }
+            <div class="card-molde-badge">${molde}</div>
+            <div class="card-source-badge ${isManual ? 'badge-manual' : 'badge-drive'}">${isManual ? 'MANUAL' : 'DRIVE'}</div>
+          </div>
+          <div class="card-body">
+            <div class="card-name">${nome}</div>
+            <div class="card-desc">${desc}</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function applyFilter(cat) {
+      currentFilter = cat;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.textContent === cat));
+      renderCatalog(ALL_DATA, cat, document.getElementById('search-input')?.value || '');
+    }
+
+    // ── DETALHE ───────────────────────────────────────────
+    function showDetail(uid) {
+      const d = ALL_DATA.find(x => x._uid === uid);
+      if (!d) return;
+      showView('detail');
+
+      const nome = d.nome || d.Item || d.Detalhamento || 'Sem nome';
+      const desc = d.descricao || d.Detalhamento || '—';
+      const molde = d.categoria || d.Categoria || 'S/N';
+      const isManual = d._source === 'manual';
+      const imgSrc = isManual ? (d.imagem_url || '') : normalizeImg(d.Imagem || '');
+
+      document.getElementById('detail-content').innerHTML = `
+        <div class="detail-layout">
+          <div class="detail-img-card">
+            ${imgSrc
+              ? `<img class="detail-img" src="${imgSrc}" alt="${nome}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                 <div class="detail-img-placeholder" style="display:none"><img src="Imagens/holder-dispositivos.png"></div>`
+              : `<div class="detail-img-placeholder"><img src="Imagens/holder-dispositivos.png"></div>`
+            }
+            <div class="detail-meta">
+              <div class="meta-row">
+                <span class="meta-key">Nº Molde</span>
+                <span class="meta-val">${molde}</span>
+              </div>
+              <div class="meta-sep"></div>
+              <div class="meta-row">
+                <span class="meta-key">Origem</span>
+                <span class="meta-val" style="color:${isManual ? 'var(--sky)' : '#34d399'}">${isManual ? 'Inserido manualmente' : 'Google Drive'}</span>
+              </div>
+            </div>
+          </div>
+          <div class="detail-right">
+            <div>
+              <div class="detail-eyebrow">
+                <div class="detail-cat-tag">${molde}</div>
+              </div>
+              <div class="detail-title">${nome}</div>
+            </div>
+            <div class="info-card">
+              <div class="info-card-hdr">
+                <div class="dot" style="background:var(--blue-lt);box-shadow:0 0 6px var(--blue)"></div>
+                Descrição / Finalidade
+              </div>
+              <div class="info-card-body"><p>${desc}</p></div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    // ── VIEWS ─────────────────────────────────────────────
+    function showView(name) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-' + name).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ── MODAL ADMIN ───────────────────────────────────────
+    function abrirModalAdmin() {
+      document.getElementById('admin-senha').value = '';
+      document.getElementById('admin-erro').classList.remove('show');
+      document.getElementById('btn-verificar').textContent = 'Verificar →';
+      document.getElementById('btn-verificar').disabled = false;
+      document.getElementById('modal-admin').classList.add('show');
+      setTimeout(() => document.getElementById('admin-senha').focus(), 100);
+    }
+
+    document.getElementById('admin-senha').addEventListener('keydown', e => {
+      if (e.key === 'Enter') verificarAdmin();
+    });
+
+    async function verificarAdmin() {
+      const senha = document.getElementById('admin-senha').value;
+      const btn = document.getElementById('btn-verificar');
+      const erro = document.getElementById('admin-erro');
+      if (!senha) { erro.classList.add('show'); return; }
+
+      btn.textContent = 'Verificando...';
+      btn.disabled = true;
+      erro.classList.remove('show');
+
+      try {
+        const res = await fetch('/.netlify/functions/verificar-admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-auth-token': AUTH_TOKEN },
+          body: JSON.stringify({ senha })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          adminToken = data.adminToken;
+          fecharModal('modal-admin');
+          abrirModalInserir();
+        } else {
+          erro.classList.add('show');
+          btn.textContent = 'Verificar →';
+          btn.disabled = false;
+        }
+      } catch {
+        erro.textContent = 'Erro de conexão. Tente novamente.';
+        erro.classList.add('show');
+        btn.textContent = 'Verificar →';
+        btn.disabled = false;
+      }
+    }
+
+    // ── MODAL INSERIR ─────────────────────────────────────
+    function abrirModalInserir() {
+      document.getElementById('f-nome').value = '';
+      document.getElementById('f-molde').value = '';
+      document.getElementById('f-desc').value = '';
+      document.getElementById('f-foto').value = '';
+      document.getElementById('file-label-text').textContent = 'Clique para selecionar uma imagem (JPG, PNG, WEBP)';
+      document.getElementById('foto-preview').style.display = 'none';
+      document.getElementById('form-erro').classList.remove('show');
+      document.getElementById('form-body').style.display = 'block';
+      document.getElementById('form-success').classList.remove('show');
+      document.getElementById('form-footer').style.display = 'flex';
+      document.getElementById('btn-salvar').disabled = false;
+      document.getElementById('btn-salvar').textContent = 'Salvar Dispositivo';
+      document.getElementById('modal-inserir').classList.add('show');
+    }
+
+    function fecharModal(id) {
+      document.getElementById(id).classList.remove('show');
+    }
+
+    function previewFoto(input) {
+      const file = input.files[0];
+      if (!file) return;
+      document.getElementById('file-label-text').textContent = file.name;
+      const reader = new FileReader();
+      reader.onload = e => {
+        document.getElementById('foto-preview-img').src = e.target.result;
+        document.getElementById('foto-preview').style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function salvarDispositivo() {
+      const nome = document.getElementById('f-nome').value.trim();
+      const molde = document.getElementById('f-molde').value.trim();
+      const desc = document.getElementById('f-desc').value.trim();
+      const fotoFile = document.getElementById('f-foto').files[0];
+      const erro = document.getElementById('form-erro');
+
+      if (!nome || !molde || !desc) {
+        erro.textContent = 'Preencha todos os campos obrigatórios.';
+        erro.classList.add('show');
+        return;
+      }
+
+      const btn = document.getElementById('btn-salvar');
+      btn.disabled = true;
+      btn.textContent = 'Salvando...';
+      erro.classList.remove('show');
+
+      try {
+        // 1. Upload da foto (se houver)
+        let imagem_url = '';
+        if (fotoFile) {
+          btn.textContent = 'Enviando foto...';
+          const formData = new FormData();
+          formData.append('foto', fotoFile);
+          const upRes = await fetch('/.netlify/functions/upload-imagem', {
+            method: 'POST',
+            headers: { 'x-auth-token': AUTH_TOKEN, 'x-admin-token': adminToken },
+            body: formData
+          });
+          const upData = await upRes.json();
+          if (!upData.ok) throw new Error(upData.message || 'Erro no upload');
+          imagem_url = upData.url;
+        }
+
+        // 2. Salvar dispositivo
+        btn.textContent = 'Salvando dados...';
+        const saveRes = await fetch('/.netlify/functions/inserir-dispositivo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-auth-token': AUTH_TOKEN, 'x-admin-token': adminToken },
+          body: JSON.stringify({ nome, categoria: molde, descricao: desc, imagem_url })
+        });
+        const saveData = await saveRes.json();
+        if (!saveData.ok) throw new Error(saveData.message || 'Erro ao salvar');
+
+        // 3. Sucesso — recarrega dados e mostra confirmação
+        document.getElementById('form-body').style.display = 'none';
+        document.getElementById('form-footer').style.display = 'none';
+        document.getElementById('form-success').classList.add('show');
+
+        // Recarregar dados após 1.5s e fechar modal
+        setTimeout(async () => {
+          fecharModal('modal-inserir');
+          await carregarDados();
+        }, 1800);
+
+      } catch (e) {
+        erro.textContent = e.message || 'Erro ao salvar. Tente novamente.';
+        erro.classList.add('show');
+        btn.disabled = false;
+        btn.textContent = 'Salvar Dispositivo';
+      }
+    }
+
+    // ── CARREGAR DADOS ────────────────────────────────────
+    async function carregarDados() {
+      let driveData = [];
+      let manualData = [];
+
+      // Busca Drive
+      try {
+        const res = await fetch('/.netlify/functions/dados', { headers: { 'x-auth-token': AUTH_TOKEN } });
+        if (res.ok) {
+          let data = await res.json();
+          if (!Array.isArray(data)) data = data.data || [];
+          driveData = data.map((d, i) => ({ ...d, _uid: `drive_${i}`, _source: 'drive' }));
+        }
+      } catch (e) { console.error('Erro Drive:', e); }
+
+      // Busca Supabase (manuais)
+      try {
+        const res = await fetch('/.netlify/functions/listar-manuais', { headers: { 'x-auth-token': AUTH_TOKEN } });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.ok && Array.isArray(data.dispositivos)) {
+            manualData = data.dispositivos.map(d => ({ ...d, _uid: `manual_${d.id}`, _source: 'manual' }));
+          }
+        }
+      } catch (e) { console.error('Erro Supabase:', e); }
+
+      ALL_DATA = [...driveData, ...manualData];
+
+      // Recria filtros ao recarregar
+      document.getElementById('filter-btns').innerHTML = '';
+      delete document.getElementById('filter-btns').dataset.rendered;
+      currentFilter = 'Todos';
+
+      renderCatalog(ALL_DATA);
+    }
+
+    // ── INIT ──────────────────────────────────────────────
+    async function init() {
+      await carregarDados();
+
+      setTimeout(() => {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('app').style.display = 'flex';
+      }, 2000);
+
+      document.getElementById('search-input').addEventListener('input', e => {
+        renderCatalog(ALL_DATA, currentFilter, e.target.value);
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>
