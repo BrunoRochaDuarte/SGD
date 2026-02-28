@@ -1,4 +1,12 @@
 {
   "name": "sgd-engenharia",
+<<<<<<< HEAD
   "version": "1.0.0"
 }
+=======
+  "version": "1.0.0",
+  "dependencies": {
+    "netlify-lambda": "^2.0.16"
+  }
+}
+>>>>>>> 5f3f4aa (fix package.json)
