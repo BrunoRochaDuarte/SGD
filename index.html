@@ -19,7 +19,6 @@
     }
     html { scroll-behavior: smooth; }
     body { font-family: var(--sans); background: var(--navy); color: var(--text); min-height: 100vh; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-    body::before { content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none; background-image: linear-gradient(rgba(0,180,216,0.05) 1px,transparent 1px), linear-gradient(90deg,rgba(0,180,216,0.05) 1px,transparent 1px); background-size: 48px 48px; }
     .bg-glow { position: fixed; top: -300px; left: 50%; transform: translateX(-50%); width: 1200px; height: 700px; background: radial-gradient(ellipse, rgba(0,119,182,0.18) 0%, transparent 65%); pointer-events: none; z-index: 0; }
     .login-wrap { position: relative; z-index: 1; width: 100%; max-width: 420px; padding: 20px; animation: fadeUp 0.5s var(--ease) both; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
