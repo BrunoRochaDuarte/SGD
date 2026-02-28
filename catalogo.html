@@ -9,19 +9,19 @@
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{
-      --navy:#070f20;--navy2:#0c1829;--panel:#111d35;--panel2:#162444;
-      --border:rgba(59,130,246,0.15);--border2:rgba(59,130,246,0.28);
-      --blue:#2563eb;--blue-lt:#3b82f6;--blue-glow:rgba(37,99,235,0.25);
-      --sky:#60a5fa;--gold:#f59e0b;--gold-lt:#fbbf24;
+      --navy:#02032b;--navy2:#040640;--panel:#071a4a;--panel2:#0a2260;
+      --border:rgba(0,180,216,0.15);--border2:rgba(0,180,216,0.32);
+      --blue:#0077b6;--blue-lt:#00b4d8;--blue-glow:rgba(0,119,182,0.28);
+      --sky:#90e0ef;--gold:#f59e0b;--gold-lt:#fbbf24;
       --emerald:#10b981;--rose:#f43f5e;
-      --text:#c8d8f0;--text-dim:#6b8ab5;--text-muted:#2d4470;--white:#f0f7ff;
+      --text:#caf0f8;--text-dim:#90e0ef;--text-muted:#0d4f7a;--white:#caf0f8;
       --sans:'Outfit',sans-serif;--mono:'DM Mono',monospace;
       --ease:cubic-bezier(0.25,0.46,0.45,0.94)
     }
     html{scroll-behavior:smooth}
     body{font-family:var(--sans);background:var(--navy);color:var(--text);min-height:100vh;overflow-x:hidden}
-    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(37,99,235,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(37,99,235,0.04) 1px,transparent 1px);background-size:48px 48px}
-    .bg-glow{position:fixed;top:-300px;left:50%;transform:translateX(-50%);width:1200px;height:700px;background:radial-gradient(ellipse,rgba(37,99,235,0.13) 0%,transparent 65%);pointer-events:none;z-index:0}
+    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(0,180,216,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(0,180,216,0.05) 1px,transparent 1px);background-size:48px 48px}
+    .bg-glow{position:fixed;top:-300px;left:50%;transform:translateX(-50%);width:1200px;height:700px;background:radial-gradient(ellipse,rgba(0,119,182,0.18) 0%,transparent 65%);pointer-events:none;z-index:0}
     .app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
     .loading-screen{position:fixed;inset:0;z-index:999;background:radial-gradient(circle at center,#d9dbe1 0%,#04142a 45%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:50px}
     .loading-logo{display:flex;align-items:center;justify-content:center;animation:pulse2 1.5s infinite}
